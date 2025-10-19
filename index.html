@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum Pemrograman Web - Tugas 3</title>
+    <style>
+        /* CSS */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+            color: #222;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        header {
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 8px 12px;
+            margin-right: 5px;
+            border: 1px solid #bbb;
+            background-color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #eee;
+        }
+
+        .dark-mode {
+            background-color: #1e1e1e;
+            color: #e9e9e9;
+        }
+
+        .dark-mode button {
+            background-color: #333;
+            color: #e9e9e9;
+            border-color: #555;
+        }
+
+        #cardContainer {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .card {
+            width: 180px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .card h3 {
+            margin: 0 0 5px;
+        }
+
+        .deleteBtn {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            border: none;
+            background: transparent;
+            color: red;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Popup form */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .popup {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+        }
+
+        .popup input,
+        .popup textarea {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .popup button {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Tugas Praktikum PW : JavaScript a.n. Fahri Arizal (102)</h1>
+        <button id="btnMode">🌚Mode Gelap</button>
+        <button id="btnAdd">➕Tambah Card</button>
+        <button id="btnForm">📋Tampilkan Form</button>
+        <button id="btnKOM">🔎Cari KOM Mahasiswa</button>
+    </header>
+
+    <section id="cardContainer"></section>
+
+    <!-- Popup -->
+    <div class="overlay" id="overlay">
+        <div class="popup">
+            <h3>Buat Card Baru</h3>
+            <label>Judul:</label>
+            <input type="text" id="judulInput" placeholder="Judul card...">
+            <label>Deskripsi:</label>
+            <textarea id="descInput" rows="3" placeholder="Isi card..."></textarea>
+            <button id="btnSubmit">Simpan</button>
+            <button id="btnClose">Tutup</button>
+        </div>
+    </div>
+
+    <script>
+        // Elemen
+        const body = document.body;
+        const btnMode = document.getElementById('btnMode');
+        const btnAdd = document.getElementById('btnAdd');
+        const btnForm = document.getElementById('btnForm');
+        const btnKOM = document.getElementById('btnKOM');
+        const container = document.getElementById('cardContainer');
+        const overlay = document.getElementById('overlay');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const btnClose = document.getElementById('btnClose');
+        const judulInput = document.getElementById('judulInput');
+        const descInput = document.getElementById('descInput');
+
+        // Mode Gelap / Terang
+        btnMode.addEventListener('click', function () {
+            body.classList.toggle('dark-mode');
+            btnMode.textContent = body.classList.contains('dark-mode') ? '🌝Mode Terang' : '🌚Mode Gelap';
+        });
+
+        // Tambah & Hapus Card
+        btnAdd.addEventListener('click', function () {
+            const cardNumber = container.children.length + 1;
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+        <button class="deleteBtn">x</button>
+        <h3>Card ${cardNumber}</h3>
+        <p>Ini card ke-${cardNumber}</p>
+      `;
+            card.querySelector('.deleteBtn').addEventListener('click', () => card.remove());
+            container.appendChild(card);
+        });
+
+        // Popup Form
+        btnForm.addEventListener('click', () => overlay.classList.add('active'));
+        btnClose.addEventListener('click', () => overlay.classList.remove('active'));
+
+        btnSubmit.addEventListener('click', () => {
+            const title = judulInput.value.trim();
+            const desc = descInput.value.trim();
+
+            if (title === '' || desc === '') {
+                alert('Isi semua field terlebih dahulu!');
+                return;
+            }
+
+            const cardNumber = container.children.length + 1;
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+        <button class="deleteBtn">x</button>
+        <h3>${title}</h3>
+        <p>${desc}</p>
+      `;
+            card.querySelector('.deleteBtn').addEventListener('click', () => card.remove());
+            container.appendChild(card);
+
+            judulInput.value = '';
+            descInput.value = '';
+            overlay.classList.remove('active');
+        });
+
+        // Pencari KOM berdasarkan NIM
+        btnKOM.addEventListener('click', () => {
+            const nim = prompt('Masukkan NIM Anda (contoh: 251402102):');
+            if (!nim) return;
+
+            if (!/^\d{9}$/.test(nim)) {
+                alert('Format NIM tidak valid! Gunakan 9 digit angka.');
+                return;
+            }
+
+            const nimNum = parseInt(nim);
+            if (nimNum < 251402002 || nimNum > 251402149) {
+                alert('NIM tidak terdaftar pada daftar mahasiswa TI 25.');
+                return;
+            }
+
+            const index = (nimNum - 251402002) % 3;
+            let kom = '';
+
+            if (index === 0) kom = 'A';
+            else if (index === 1) kom = 'B';
+            else kom = 'C';
+
+            alert(`NIM ${nim} terdaftar di KOM ${kom}.`);
+        });
+    </script>
+</body>
+
+</html>
